@@ -48,11 +48,24 @@ namespace GameTutorial1
         //For animation
         private AnimatedSprite animatedSprite;
 
+        //Keyboard input
+        private KeyboardState oldKeyState;
+
+        //Mouse input
+        private MouseState oldMouseState;
+        private int mouseX = 0;
+        private int mouseY = 0;
+
+
+        Keys[] keyArray;
+
+        //Constructor
         public Game1()
             : base()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+            this.IsMouseVisible = true;
         }
 
         /// <summary>
@@ -111,18 +124,69 @@ namespace GameTutorial1
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            KeyboardState newKeyState = Keyboard.GetState();  // get the newest state
+            KeyboardState keyState = Keyboard.GetState();  // get the newest state
+            MouseState mouseState = Mouse.GetState();
+            MouseState newMouseState = Mouse.GetState();
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
             // TODO: Add your update logic here
             score++;
-            animatedSprite.Update(); //Move sprite
+            animatedSprite.Update(); //Animate sprite
 
             angle += 0.01f; //Rotate arrow
 
             blueAngle += blueSpeed;
             greenAngle += greenSpeed;
             redAngle += redSpeed;
+
+            //Keyboard input
+            if (newKeyState.IsKeyDown(Keys.Left))
+            {
+                // do something here
+                angle -= 0.02f; //Rotate arrow
+            }
+
+
+            // handle the input
+            if (oldKeyState.IsKeyUp(Keys.Right) && newKeyState.IsKeyDown(Keys.Right))
+            {
+                // do something here
+                // this will only be called when the key if first pressed
+                blueAngle += blueSpeed * 10;
+            }
+            oldKeyState = newKeyState;  // set the new state as the old state for next time
+
+            //Check control keys
+            if ((keyState.IsKeyDown(Keys.LeftControl) || keyState.IsKeyDown(Keys.RightControl)) && keyState.IsKeyDown(Keys.C))
+            {
+                // do something here for when Ctrl-C is pressed
+                score = 0;
+            }
+
+            Keys[] pressedKeys = keyState.GetPressedKeys();
+            keyArray = pressedKeys;
+
+            //Mouse input
+            if (mouseState.LeftButton == ButtonState.Pressed)
+            {
+                // Do whatever you want here
+                redAngle += redSpeed * 10;
+            }
+
+            if (newMouseState.RightButton == ButtonState.Pressed && oldMouseState.RightButton == ButtonState.Released)
+            {
+                // do something here
+                greenAngle += greenSpeed * 10;
+            }
+            oldMouseState = newMouseState; // this reassigns the old state so that it is ready for next time
+
+            //Get mouse position
+            mouseX = mouseState.X;
+            mouseY = mouseState.Y;
+
 
             base.Update(gameTime);
         }
@@ -160,6 +224,9 @@ namespace GameTutorial1
 
             //Score
             spriteBatch.DrawString(font, "Score: " + score.ToString(), new Vector2(100, 100), Color.White);
+            //spriteBatch.DrawString(font, "Keys: " + keyArray, new Vector2(100, 200), Color.White);
+
+            spriteBatch.DrawString(font, "Mouse: (" + mouseX.ToString() +"," + mouseY.ToString() +")", new Vector2(100, 150), Color.Red);
 
             //Rotating arrow
             Vector2 location = new Vector2(400, 240);
